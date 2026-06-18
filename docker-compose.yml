@@ -1,0 +1,13 @@
+services:
+  space-weather:
+    build: .
+    container_name: space-weather
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NASA_API_KEY=${NASA_API_KEY}
+    restart: unless-stopped
