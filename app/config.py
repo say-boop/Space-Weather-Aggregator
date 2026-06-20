@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import logging
+import sys
 
 
 env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -21,3 +23,21 @@ API_URLS = {
 CACHE_FILE = "data/cache.json"
 
 UPDATE_INTERVAL = 300
+
+
+def setup_logging():
+	logger = logging.getLogger("space_weather")
+	logger.setLevel(logging.INFO)
+
+	formatter = logging.Formatter(
+		"[%(asctime)s] %(levelname)s - %(message)s",
+		datefmt="%Y-%m-%d %H:%M:%S"
+	)
+
+	console_handler = logging.StreamHandler(sys.stdout)
+	console_handler.setFormatter(formatter)
+	logger.addHandler(console_handler)
+
+	return logger
+
+logger = setup_logging()

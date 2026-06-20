@@ -2,7 +2,7 @@ FROM python:3.12.9-slim
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir poetry==1.8.4
+RUN pip install --no-cache-dir poetry
 
 COPY pyproject.toml ./
 
@@ -14,4 +14,4 @@ COPY data/ ./data/
 
 RUN mkdir -p /app/data
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000": "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
