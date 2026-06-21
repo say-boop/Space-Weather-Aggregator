@@ -38,6 +38,10 @@ def setup_logging():
 	console_handler.setFormatter(formatter)
 	logger.addHandler(console_handler)
 
+	file_handler = logging.FileHandler("data/app.log", encoding="utf-8")
+	file_handler.setFormatter(formatter)
+	logger.addHandler(file_handler)
+
 	return logger
 
 logger = setup_logging()

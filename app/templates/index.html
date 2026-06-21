@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<link rel="stylesheet" href="/static/css/style.css">
+	<title>Space Weather Aggregator</title>
+</head>
+<body>
+	<header class="header">
+		<h1>🛰️ Space Weather Dashboard</h1>
+		<span id="connection-status">🟢 Live</span>
+		<span id="last-updated">--</span>
+	</header>
+	<main class="dashboard">
+		<div class="card">
+			<h2>☀️ Solar Flares</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Time</th>
+						<th>Class</th>
+						<th>Source</th>
+					</tr>
+				</thead>
+				<tbody id="flares-table">
+			
+				</tbody>
+			</table>
+		</div>
+		<div class="card">
+			<h2>💨 Coronal Mass Ejections</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Time</th>
+						<th>Speed (km/s)</th>
+						<th>Type</th>
+					</tr>
+				</thead>
+				<tbody id="cme-table">
+		
+				</tbody>
+			</table>
+		</div>
+		<div class="card">
+			<h2>🧲 Kp Index</h2>
+			<span id="kp-value">--</span>
+			<span id="kp-status">--</span>
+			<canvas id="kp-chart"></canvas>
+		</div>
+		<div class="card">
+			<h2>🛰️ ISS Position</h2>
+			<span id="iss-coords">--</span>
+			<div id="iss-map"></div>
+		</div>
+		<div class="card">
+			<h2>🌌 Aurora Forecast</h2>
+			<span id="aurora-obs-time"></span>
+			<span id="aurora-forecast-time"></span>
+			<span id="aurora-intensity"></span>
+		</div>
+	</main>
+	<footer class="footer">
+		<button id="refresh_btn">🔄 Refresh Now</button>
+		<p>Data updates every 5 minutes • WebSocket every 30 seconds</p>
+	</footer>
+	<script src="/static/js/app.js"></script>
+</body>
+</html>
