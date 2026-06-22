@@ -14,6 +14,9 @@
 		<h1>🛰️ Space Weather Dashboard</h1>
 		<span id="connection-status">🟢 Live</span>
 		<span id="last-updated">--</span>
+		<div class="header-btn-export">
+			<button id="export_btn" class="btn-primary">📄 Export Report</button>
+		</div>
 	</header>
 	<main class="dashboard">
 		<div class="card">
@@ -51,11 +54,24 @@
 			<span id="kp-value">--</span>
 			<span id="kp-status">--</span>
 			<canvas id="kp-chart"></canvas>
+			<canvas id="kp-history-chart"></canvas>
 		</div>
 		<div class="card">
 			<h2>🛰️ ISS Position</h2>
 			<span id="iss-coords">--</span>
 			<div id="iss-map"></div>
+			<div class="iss-controls">
+				<div class="input-group">
+					<label>Your latitude:</label>
+					<input type="text" id="user-lat" value="35.75" placeholder="0.00">
+				</div>
+				<div class="input-group">
+					<label>Your longitude:</label>
+					<input type="text" id="user-lon" value="37.61" placeholder="0.00">
+				</div>
+				<button id="check-passes-btn" class="btn-primary">Check Passes</button>
+			</div>
+			<div id="iss-passes" style="margin-top:8px;"></div>
 		</div>
 		<div class="card">
 			<h2>🌌 Aurora Forecast</h2>

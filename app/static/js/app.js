@@ -2,6 +2,9 @@ const socket = new WebSocket("ws://127.0.0.1:8000/ws/data");
 let kpChart = null;
 let issMap = null;
 let issMarker = null;
+let auroraLayer = null;
+let showAlertSent = false;
+let kpHistoryChart = null;
 
 
 function initKpChart() {
@@ -37,6 +40,58 @@ function initKpChart() {
 }
 
 
+function initKpHistoryChart() {
+	const ctx = document.getElementById("kp-history-chart").getContext("2d");
+	kpHistoryChart = new Chart(ctx, {
+		type: "line",
+		data: {
+			labels: [],
+			datasets: [{
+				label: "Kp History (30 days)",
+				data: [],
+				borderColor: "#ffaa00",
+				fill: false,
+				tension: 0.2,
+				pointRadius: 0
+			}]
+		},
+		options: {
+			responsive: true,
+			maitainAspectRatio: false,
+			scales: {
+				y: {
+					min: 0,
+					max: 9,
+					ticks: {
+						stepSize: 1
+					}
+				}
+			}
+		}
+	});
+}
+
+
+async function loadKpHistory() {
+	try {
+		const response = await fetch("/api/kp/history");
+		const history = await response.json();
+		
+		if (kpHistoryChart && history.length > 0) {
+			kpHistoryChart.data.labels = history.map(function(item) {
+				return formatTime(item.time);
+			});
+			kpHistoryChart.data.datasets[0].data = history.map(function(item) {
+				return item.kp;
+			});
+			kpHistoryChart.update();
+		}
+	} catch (error) {
+		console.error("Failed to load kp history:", error);
+	}
+}
+
+
 function formatTime(isoString) {
 	if (!isoString) return "N/A";
 	
@@ -48,6 +103,14 @@ function formatTime(isoString) {
 	const hours = String(date.getHours()).padStart(2, "0");
 	const minutes = String(date.getMinutes()).padStart(2, "0");
 	return `${hours}:${minutes}`
+}
+
+
+function getAuroraColor(intensity) {
+	if (intensity > 50) return "#ff4444";
+	if (intensity > 25) return "#ffaa00";
+	if (intensity > 10) return "#ffff00";
+	return "#44ff44";
 }
 
 
@@ -161,6 +224,13 @@ function updateKpIndex(kpData) {
 		kpChart.data.datasets[0].data = kpData.map(d => d.kp);
 		kpChart.update();
 	}
+	
+	if (latest.kp >= 5 && !showAlertSent) {
+		showNotification("⚠️ Magnetic Storm! Kp = " + latest.kp, "danger");
+		showAlertSent = true;
+	} else if (latest.kp > 4) {
+		showAlertSent = false;
+	}
 }
 
 
@@ -196,7 +266,103 @@ function updateAurora(aurora) {
 		auroraIntensity.textContent = `Low (${maxIntensity})`;
     auroraIntensity.style.color = "#44ff44";
 	}
+	
+	if (issMap) {
+		if (auroraLayer) {
+			issMap.removeLayer(auroraLayer);
+		}
+		
+		const circles = [];
+		aurora.coordinates.forEach(coord => {
+			if (coord[2] > 0) {
+				circles.push(
+          L.circleMarker([coord[1], coord[0]], {
+            radius: 2,
+            fillColor: getAuroraColor(coord[2]),
+            color: getAuroraColor(coord[2]),
+            fillOpacity: coord[2] / 100,
+            weight: 0,
+          }),
+        );
+			}
+		});
+		
+		auroraLayer = L.layerGroup(circles).addTo(issMap);
+	}
 }
+
+
+function showNotification(message, type = "info") {
+	const container = document.createElement("div");
+	container.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    z-index: 9999;
+    cursor: pointer;
+    animation: slideIn 0.3s ease;
+  `;
+	
+	if (type === "danger") container.style.background = "#ff4444";
+	else if (type === "warning") container.style.background = "#ffaa00";
+	else container.style.background = "#3498db";
+	
+	container.textContent = message;
+	document.body.appendChild(container);
+	
+	setTimeout(() => container.remove(), 5000);
+	container.addEventListener("click", () => container.remove());
+}
+
+
+function showPasses(passes) {
+	const passesDiv = document.getElementById("iss-passes");
+	
+	if (!passes || passes.length === 0) {
+		passesDiv.innerHTML = "<p>No upcoming passes</p>";
+		return;
+	}
+	
+	let html = "<strong>Upcoming passes:</strong><ul>";
+	passes.forEach(function(p) {
+		const riseDate = new Date(p.rise_time * 1000);
+		const time = `${String(riseDate.getHours()).padStart(2, "0")}:${String(riseDate.getMinutes()).padStart(2, "0")}`;
+		const date = `${String(riseDate.getDate()).padStart(2, "0")}.${String(riseDate.getMonth() + 1).padStart(2, "0")}`;
+		const durationMin = Math.round(p.duration_seconds / 60);
+		
+		html += `<li>${date} at ${time} - ${durationMin} min</li>`;
+	});
+	
+	html += "</ul>";
+	passesDiv.innerHTML = html;
+}
+
+
+document.getElementById("check-passes-btn").addEventListener("click", async function() {
+	const lat = parseFloat(document.getElementById("user-lat").value);
+	const lon = parseFloat(document.getElementById("user-lon").value);
+	
+	if (isNaN(lat) || isNaN(lon)) {
+		showNotification("Please enter valid coordinates", "warning");
+		return;
+	}
+	
+	localStorage.setItem("user-lat", lat);
+	localStorage.setItem("user-lon", lon);
+	
+	try {
+		const response = await fetch(`/api/iss/passes?lat=${lat}&lon=${lon}`);
+		const data = await response.json();
+		showPasses(data.passes);
+	} catch (error) {
+		console.error("Error: ", error);
+		showNotification("Failed to get passes", "danger");
+	}
+})
 
 
 document.getElementById("refresh_btn").addEventListener("click", async function() {
@@ -204,18 +370,30 @@ document.getElementById("refresh_btn").addEventListener("click", async function(
 		const response = await fetch("/api/refresh", {
 			method: "POST"
 		});
-		const data = await response.json();
-		updateDashboard(data);
+		showNotification("Refresh started...", "info");
+		setTimeout(loadKpHistory, 3000);
 	} catch (error) {
 		console.error("Refresh error: ", error);
 	}
 });
 
 
+document.getElementById("export_btn").addEventListener("click", function() {
+	window.open("/api/export", "_blank");
+})
+
+
 socket.onopen = function () {
 	document.getElementById("connection-status").innerHTML = "🟢 Live";
 	
 	initKpChart();
+	initKpHistoryChart();
+	loadKpHistory();
+	
+	const savedLat = localStorage.getItem("user-lat");
+	const savedLon = localStorage.getItem("user-lon");
+	if (savedLat) document.getElementById("user-lat").value = savedLat;
+	if (savedLon) document.getElementById("user-lon").value = savedLon;
 	
 	fetch("/api/data")
 		.then(res => res.json())
@@ -224,7 +402,7 @@ socket.onopen = function () {
 
 socket.onmessage = function (event) {
 	const data = JSON.parse(event.data);
-	updateDashboard(data)
+	updateDashboard(data);
 }
 
 socket.onclose = function () {
