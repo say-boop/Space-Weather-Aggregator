@@ -5,6 +5,8 @@ let issMarker = null;
 let auroraLayer = null;
 let showAlertSent = false;
 let kpHistoryChart = null;
+let currentLang = localStorage.getItem("lang") || "en";
+let translations = {};
 
 
 function initKpChart() {
@@ -77,7 +79,7 @@ async function loadKpHistory() {
 		const response = await fetch("/api/kp/history");
 		const history = await response.json();
 		
-		if (kpHistoryChart && history.length > 0) {
+		if (kpHistoryChart && history && history.length > 0) {
 			kpHistoryChart.data.labels = history.map(function(item) {
 				return formatTime(item.time);
 			});
@@ -136,7 +138,7 @@ function updateISS(iss) {
 	}
 	
 	if (iss === null) {
-    issCoords.textContent = "No data";
+    issCoords.textContent = translations["no_data"] || "No data";
     return;
   }
 	
@@ -156,7 +158,7 @@ function updateFlares(flares) {
 	const flaresTable = document.getElementById("flares-table");
 	if (!flares || flares.length === 0) {
 		flaresTable.innerHTML = `<tr>
-			<td colspan="3">No recent flares</td>
+			<td colspan="3">${translations["no_flares"] || "No recent flares"}</td>
 		</tr>`;
 		return;
 	}
@@ -179,7 +181,7 @@ function updateCME(cmes) {
 	const cmeTable = document.getElementById("cme-table");
 	if (!cmes || cmes.length === 0) {
 		cmeTable.innerHTML = `<tr>
-			<td colspan="3">No recent CMEs</td>
+			<td colspan="3">${translations["no_cme"] || "No recent CMEs"}</td>
 		</tr>`;
     return;
 	}
@@ -203,7 +205,7 @@ function updateKpIndex(kpData) {
 	const kpStatus = document.getElementById("kp-status");
 	if (!kpData || kpData.length === 0) {
 		kpValue.textContent = "--";
-  	kpStatus.textContent = "No data";
+  	kpStatus.textContent = translations["no_data"] || "No data";;
 		return;
 	}
 	
@@ -246,8 +248,8 @@ function updateAurora(aurora) {
 		return;
 	}
 	
-	auroraObsTime.textContent = "Observed: " + formatTime(aurora.observation_time);
-	auroraForecastTime.textContent = "Forecast: " + formatTime(aurora.forecast_time);
+	auroraObsTime.textContent = `${translations["observed"] || "Observed:"}` + formatTime(aurora.observation_time);
+	auroraForecastTime.textContent = `${translations["forecast"] || "Forecast:"}` + formatTime(aurora.forecast_time);
 	
 	let maxIntensity = 0;
 	aurora.coordinates.forEach(coord => {
@@ -257,13 +259,13 @@ function updateAurora(aurora) {
 	});
 	
 	if (maxIntensity > 50) {
-		auroraIntensity.textContent = `High (${maxIntensity})`;
+		auroraIntensity.textContent = `${translations["high"] || "High:"} (${maxIntensity})`;
 		auroraIntensity.style.color = "#ff4444";
 	} else if (maxIntensity > 25) {
-		auroraIntensity.textContent = `Moderate (${maxIntensity})`;
+		auroraIntensity.textContent = `${translations["moderate"] || "Moderate:"} (${maxIntensity})`;
 		auroraIntensity.style.color = "#ffaa00";
 	} else {
-		auroraIntensity.textContent = `Low (${maxIntensity})`;
+		auroraIntensity.textContent = `${translations["low"] || "Low:"} (${maxIntensity})`;
     auroraIntensity.style.color = "#44ff44";
 	}
 	
@@ -327,7 +329,7 @@ function showPasses(passes) {
 		return;
 	}
 	
-	let html = "<strong>Upcoming passes:</strong><ul>";
+	let html = `<strong>${translations["no_data"] || "No upcoming passes"}</strong><ul>`;
 	passes.forEach(function(p) {
 		const riseDate = new Date(p.rise_time * 1000);
 		const time = `${String(riseDate.getHours()).padStart(2, "0")}:${String(riseDate.getMinutes()).padStart(2, "0")}`;
@@ -340,6 +342,41 @@ function showPasses(passes) {
 	html += "</ul>";
 	passesDiv.innerHTML = html;
 }
+
+
+async function loadTranslations(lang) {
+	try {
+		const response = await fetch(`/static/locales/${lang}.json`);
+		translations = await response.json();
+		applyTranslations();
+	} catch (error) {
+		console.error("Failed to load translations:", error);
+	}
+}
+
+
+function applyTranslations() {
+	document.querySelectorAll("[data-i18n]").forEach(el => {
+		const key = el.getAttribute("data-i18n");
+		if (translations[key]) {
+			el.textContent = translations[key];
+		}
+	});
+}
+
+
+function toggleLanguage() {
+	currentLang = currentLang === "en" ? "ru" : "en";
+	localStorage.setItem("lang", currentLang);
+	document.getElementById("lang-btn").textContent = currentLang === "en" ? "🇷🇺 RU" : "🇬🇧 EN";
+	loadTranslations(currentLang).then(function() {
+		fetch("/api/data")
+			.then(function(res) { return res.json(); })
+			.then(function(data) { updateDashboard(data); });
+	});
+}
+
+document.getElementById("lang-btn").addEventListener("click", toggleLanguage)
 
 
 document.getElementById("check-passes-btn").addEventListener("click", async function() {
@@ -384,11 +421,12 @@ document.getElementById("export_btn").addEventListener("click", function() {
 
 
 socket.onopen = function () {
-	document.getElementById("connection-status").innerHTML = "🟢 Live";
+	document.getElementById("connection-status").innerHTML = translations["live"] || "🟢 Live";
 	
 	initKpChart();
 	initKpHistoryChart();
 	loadKpHistory();
+	loadTranslations(currentLang);
 	
 	const savedLat = localStorage.getItem("user-lat");
 	const savedLon = localStorage.getItem("user-lon");
@@ -406,9 +444,9 @@ socket.onmessage = function (event) {
 }
 
 socket.onclose = function () {
-	document.getElementById("connection-status").innerHTML = "🔴 Offline";
+	document.getElementById("connection-status").innerHTML = translations["offline"] || "🔴 Offline";
 }
 
 socket.onerror = function () {
-	document.getElementById("connection-status").innerHTML = "🔴 Error";
+	document.getElementById("connection-status").innerHTML = translations["error"] || "🔴 Error";
 }

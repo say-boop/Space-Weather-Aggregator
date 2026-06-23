@@ -1,0 +1,21 @@
+{
+	"name": "Space Weather Aggregator",
+	"short_name": "SWA",
+	"description": "Дашбоард космической погоды - солнечные вспышки, Kp-индекс, МКС, полярные сияния",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#1a1a2e",
+	"theme_color": "#0A84FF",
+	"icons": [
+		{
+			"src": "/static/icons/extraterrestrial-outpost.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/static/icons/extraterrestrial-outpost.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+}

@@ -4,12 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
 import asyncio
-import os
-import json
 
 from app.config import logger
 from app.services.scheduler import start_background_tasks
-from app.services.collector import load_cache, collect_all_data, save_cache
+from app.services.collector import collect_all_data
+from app.services.cache import save_data, load_data, load_kp_history
 from app.api.iss import get_iss_passes
 
 
@@ -37,7 +36,7 @@ def root(request: Request):
 
 @app.get("/api/data")
 def get_data():
-	return load_cache()
+	return load_data()
 
 
 @app.post("/api/refresh")
@@ -51,7 +50,7 @@ async def refresh_data():
 async def do_refresh():
 	try:
 		data = await collect_all_data()
-		save_cache(data)
+		save_data(data)
 		logger.info("Refresh completed")
 	except Exception as e:
 		logger.error(f"Refresh error: {e}")
@@ -69,17 +68,12 @@ async def iss_passes(lat: float, lon: float):
 
 @app.get("/api/kp/history")
 def kp_history():
-	history_file = "data/kp_history.json"
-	if os.path.exists(history_file):
-		with open(history_file, "r") as f:
-			return json.load(f)
-
-	return []
+	load_kp_history()
 
 
 @app.get("/api/export")
 def export_report():
-	data = load_cache()
+	data = load_data()
 	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 	html = f"""<!DOCTYPE html>
@@ -139,7 +133,7 @@ async def websocket_data(websocket: WebSocket):
 	logger.info("WebSocket connected")
 	try:
 		while True:
-			data = load_cache()
+			data = load_data()
 			await websocket.send_json(data)
 			await asyncio.sleep(30)
 	except WebSocketDisconnect:

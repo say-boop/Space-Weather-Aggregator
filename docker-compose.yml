@@ -11,3 +11,12 @@ services:
       - PYTHONUNBUFFERED=1
       - NASA_API_KEY=${NASA_API_KEY}
     restart: unless-stopped
+    depends_on:
+      - redis
+  
+  redis:
+    image: redis:7-alpine
+    container_name: space-weather-redis
+    ports:
+       - "6379:6379"
+    restart: unless-stopped

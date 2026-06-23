@@ -10,6 +10,7 @@ load_dotenv(env_path)
 
 
 NASA_API_KEY = os.getenv("NASA_API_KEY", "")
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
 
 API_URLS = {
