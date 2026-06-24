@@ -1,5 +1,6 @@
 const socket = new WebSocket("ws://127.0.0.1:8000/ws/data");
 let kpChart = null;
+let radiationChart = null;
 let issMap = null;
 let issMarker = null;
 let auroraLayer = null;
@@ -74,6 +75,51 @@ function initKpHistoryChart() {
 }
 
 
+function initRadiationChart() {
+  const ctx = document.getElementById("radiation-chart").getContext("2d");
+  radiationChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Electron Flux",
+          data: [],
+          borderColor: "#ff8800",
+          fill: false,
+          tension: 0.3,
+					pointRadius: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maitainAspectRatio: false,
+      scales: {
+        y: {
+          type: "logarithmic",
+					ticks: {
+						color: "#aaa"
+					},
+					grid: {
+						color: "#222"
+					},
+        },
+				x: {
+					ticks: {
+						color: "#aaa",
+						maxTicksLimit: 10
+					},
+					grid: {
+						display: false
+					}
+				}
+      },
+    },
+  });
+}
+
+
 async function loadKpHistory() {
 	try {
 		const response = await fetch("/api/kp/history");
@@ -123,6 +169,9 @@ function updateDashboard(data) {
 	updateCME(data.cme);
 	updateKpIndex(data.kp_index);
 	updateAurora(data.aurora);
+	updateAsteroids(data.asteroids);
+	updateRadiation(data.radiation);
+	updateSolarWind(data.solar_wind, data.bz_data);
 	console.log("Dashboard updated");
 }
 
@@ -167,9 +216,9 @@ function updateFlares(flares) {
 	
 	flares.slice(0, 5).forEach(flare => {
 		rows += `<tr>
-			<td>${formatTime(flare.time)}</td>
-			<td>${flare.class || "N/A"}</td>
-			<td>${flare.source || "N/A"}</td>
+			<td>${formatTime(flare.beginTime)}</td>
+			<td>${flare.classType || "N/A"}</td>
+			<td>${flare.sourceLocation || "N/A"}</td>
 		</tr>`;
 	});
 	
@@ -189,10 +238,13 @@ function updateCME(cmes) {
 	let rows = "";
 
   cmes.slice(0, 5).forEach((cme) => {
+		const speed = cme.cmeAnalyses && cme.cmeAnalyses[0] ? cme.cmeAnalyses[0].speed : "N/A";
+    const type = cme.cmeAnalyses && cme.cmeAnalyses[0] ? cme.cmeAnalyses[0].type || "N/A" : "N/A";
+		
     rows += `<tr>
-			<td>${formatTime(cme.time)}</td>
-			<td>${cme.speed || "N/A"}</td>
-			<td>${cme.type || "N/A"}</td>
+			<td>${formatTime(cme.startTime)}</td>
+			<td>${speed}</td>
+			<td>${type}</td>
 		</tr>`;
   });
 
@@ -290,6 +342,92 @@ function updateAurora(aurora) {
 		});
 		
 		auroraLayer = L.layerGroup(circles).addTo(issMap);
+	}
+}
+
+
+function updateAsteroids(asteroids) {
+	const table = document.getElementById("asteroids-table");
+	
+	if (!asteroids || asteroids.length === 0) {
+		table.innerHTML = `<tr><td colspan="4">${translations["no_asteroids"] || "No asteroids data"}</td></tr>`;
+		return;
+	}
+	
+	let rows = "";
+	asteroids.forEach(function(ast) {
+		const diameter = `${Math.round(ast.diameter_min)} - ${Math.round(ast.diameter_max)} m`;
+		const distance = Number(ast.distance_km).toLocaleString("en-US", {maximumFractionDigits: 0}) + " km";
+		const hazardous = ast.is_hazardous
+      ? '<span style="color:#ff4444">⚠️ Yes</span>'
+      : '<span style="color:#44ff44">No</span>';
+		
+		rows += `<tr>
+			<td>${ast.name}</td>
+			<td>${diameter}</td>
+			<td>${distance}</td>
+			<td>${hazardous}</td>
+		</tr>`;
+	});
+	
+	table.innerHTML = rows;
+}
+
+
+function updateRadiation(data) {
+	let radiationStatus = document.getElementById("radiation-status");
+	if (!data || data.length === 0) {
+		radiationStatus.textContent = translations["no_data"] || "No data";
+		return;
+	}
+	
+	const latest = data[data.length - 1];
+	
+	let status = "";
+
+  if (latest.flux < 1000) {
+		status = translations["radiation_normal"] || "Normal";
+    radiationStatus.style.color = "#44ff44";
+  } else if (latest.flux < 10000) {
+    status = translations["radiation_elevated"] || "Elevated";
+    radiationStatus.style.color = "#ffaa00";
+  } else {
+    status = translations["radiation_high"] || "High";
+    radiationStatus.style.color = "#ff4444";
+  }
+	
+	radiationStatus.textContent = `Flux: ${latest.flux.toLocaleString()} - ${status}`;
+
+  if (radiationChart) {
+    radiationChart.data.labels = data.map((d) => formatTime(d.time_tag));
+    radiationChart.data.datasets[0].data = data.map((d) => d.flux);
+    radiationChart.update();
+  }
+}
+
+
+function updateSolarWind(solarWind, bzData) {
+	const info = document.getElementById("solar-wind-info");
+	const bzInfo = document.getElementById("bz-info");
+	
+	if (solarWind && solarWind.speed) {
+		info.innerHTML = `${translations["speed"] || "Speed"}: ${solarWind.speed} km/s
+			<br>${translations["density"] || "Density"}: ${solarWind.density} p/cc
+			<br>${translations["temp"] || "Temp"}: ${Number(solarWind.temperature).toLocaleString()} K`;
+	} else {
+		info.textContent = translations["no_data"] || "No data";
+	}
+	
+	if (bzData && bzData.bz !== undefined) {
+		if (bzData.bz < 0) {
+			bzInfo.innerHTML = `Bz: ${bzData.bz} nT ✅ (${translations["aurora_likely"] || "Aurora likely"})`;
+      bzInfo.style.color = "#44ff44";
+		} else {
+			bzInfo.innerHTML = `Bz: ${bzData.bz} nT ❌ (${translations["aurora_unlikely"] || "Aurora unlikely"})`;
+      bzInfo.style.color = "#ff4444";
+		}
+	} else {
+		bzInfo.textContent = "";
 	}
 }
 
@@ -425,6 +563,7 @@ socket.onopen = function () {
 	
 	initKpChart();
 	initKpHistoryChart();
+	initRadiationChart();
 	loadKpHistory();
 	loadTranslations(currentLang);
 	

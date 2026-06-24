@@ -20,6 +20,11 @@ API_URLS = {
 	"aurora": "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json",
   "iss": "http://api.open-notify.org/iss-now.json",
 	"iss_pass": "http://api.open-notify.org/iss-pass.json",
+	"asteroids": "https://api.nasa.gov/neo/rest/v1/feed",
+	"radiation": "https://services.swpc.noaa.gov/json/goes/primary/differential-electrons-1-day.json",
+	"planets": "https://api.le-systeme-solaire.net/rest/bodies",
+	"solar_wind": "https://services.swpc.noaa.gov/products/solar-wind/plasma-7-day.json",
+	"bz": "https://services.swpc.noaa.gov/products/solar-wind/mag-7-day.json",
 }
 
 CACHE_FILE = "data/cache.json"

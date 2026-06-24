@@ -20,5 +20,17 @@
   "high": "High",
   "moderate": "Moderate",
   "low": "Low",
-  "footer_text": "Data updates every 5 minutes • WebSocket every 30 seconds"
+  "footer_text": "Data updates every 5 minutes • WebSocket every 30 seconds",
+	"asteroids": "☄️ Near-Earth Asteroids",
+	"no_asteroids": "No asteroids data",
+	"radiation": "🌤️ Radiation Belt",
+	"radiation_normal": "Normal",
+	"radiation_elevated": "Elevated",
+	"radiation_high": "High",
+	"solar_wind": "🌞 Solar Wind",
+	"speed": "Speed",
+	"density": "Density",
+	"temp": "Temp",
+	"aurora_likely": "Aurora likely",
+	"aurora_unlikely": "Aurora unlikely"
 }

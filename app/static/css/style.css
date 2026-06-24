@@ -123,6 +123,11 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 0.9rem;
+	table-layout: fixed;
+}
+
+.card tbody td {
+	padding-left: 45px;
 }
 
 th {

@@ -56,6 +56,22 @@
 			</table>
 		</div>
 		<div class="card">
+			<h2 data-i18n="asteroids">☄️ Near-Earth Asteroids</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Diameter (m)</th>
+						<th>Distance (km)</th>
+						<th>Hazardous</th>
+					</tr>
+				</thead>
+				<tbody id="asteroids-table">
+		
+				</tbody>
+			</table>
+		</div>
+		<div class="card">
 			<h2 data-i18n="kp_index">🧲 Kp Index</h2>
 			<span id="kp-value">--</span>
 			<span id="kp-status">--</span>
@@ -84,6 +100,16 @@
 			<span id="aurora-obs-time"></span>
 			<span id="aurora-forecast-time"></span>
 			<span id="aurora-intensity"></span>
+		</div>
+		<div class="card">
+			<h2 data-i18n="radiation">🌤️ Radiation Belt</h2>
+			<p id="radiation-status">--</p>
+			<canvas id="radiation-chart"></canvas>
+		</div>
+		<div class="card">
+			<h2 data-i18n="solar_wind">🌞 Solar Wind</h2>
+			<p id="solar-wind-info">--</p>
+			<p id="bz-info">--</p>
 		</div>
 	</main>
 	<footer class="footer">

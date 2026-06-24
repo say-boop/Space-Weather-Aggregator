@@ -20,5 +20,17 @@
   "high": "Высокая",
   "moderate": "Умеренная",
   "low": "Низкая",
-  "footer_text": "Данные обновляются каждые 5 минут • WebSocket каждые 30 секунд"
+  "footer_text": "Данные обновляются каждые 5 минут • WebSocket каждые 30 секунд",
+  "asteroids": "☄️ Астероиды рядом с Землёй",
+  "no_asteroids": "Нет данных об астероидах",
+	"radiation": "🌤️ Радиационный пояс",
+	"radiation_normal": "Нормальный",
+	"radiation_elevated": "Повышенный",
+	"radiation_high": "Высокий",
+	"solar_wind": "🌞 Солнечный ветер",
+	"speed": "Скорость",
+	"density": "Плотность",
+	"temp": "Температура",
+	"aurora_likely": "Сияния вероятны",
+	"aurora_unlikely": "Сияния маловероятны"
 }
