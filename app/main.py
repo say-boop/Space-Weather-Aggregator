@@ -127,6 +127,14 @@ def export_report():
 	)
 
 
+@app.get("/globe")
+def globe_page(request: Request):
+	return templates.TemplateResponse(
+		request=request,
+		name="globe.html"
+	)
+
+
 @app.websocket("/ws/data")
 async def websocket_data(websocket: WebSocket):
 	await websocket.accept()

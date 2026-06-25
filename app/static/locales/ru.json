@@ -32,5 +32,6 @@
 	"density": "Плотность",
 	"temp": "Температура",
 	"aurora_likely": "Сияния вероятны",
-	"aurora_unlikely": "Сияния маловероятны"
+	"aurora_unlikely": "Сияния маловероятны",
+	"sun_image": "📸 Солнце сейчас (SOHO)"
 }

@@ -32,5 +32,6 @@
 	"density": "Density",
 	"temp": "Temp",
 	"aurora_likely": "Aurora likely",
-	"aurora_unlikely": "Aurora unlikely"
+	"aurora_unlikely": "Aurora unlikely",
+	"sun_image": "📸 Sun Now (SOHO)"
 }

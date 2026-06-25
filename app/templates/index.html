@@ -17,6 +17,7 @@
 		<h1 data-i18n="title">🛰️ Space Weather Dashboard</h1>
 		<span id="connection-status">🟢 Live</span>
 		<span id="last-updated">--</span>
+		<a href="/globe" class="btn-primary" style="text-decoration:none; width: 10%;" target="_blank">🌍 3D Globe</a>
 		<div class="header-btn-export">
 			<button id="export_btn" class="btn-primary" data-i18n="export">📄 Export Report</button>
 		</div>
@@ -70,6 +71,16 @@
 		
 				</tbody>
 			</table>
+		</div>
+		<div class="card">
+			<h2 data-i18n="sun-image">📸 Sun Now (SDO)</h2>
+			<img id="sun-image" src="" alt="Sun" style="width: 100%; border-radius: 8px;">
+			<p id="sun-wavelength" style="margin-top: 8px;">SOHO EIT: 304Å</p>
+			<div class="sun-btns">
+				<button onclick="changeSunWavelength('eit_304')" class="sun-btn active">304Å</button>
+				<button onclick="changeSunWavelength('eit_195')" class="sun-btn">195Å</button>
+				<button onclick="changeSunWavelength('eit_284')" class="sun-btn">284Å</button>
+			</div>
 		</div>
 		<div class="card">
 			<h2 data-i18n="kp_index">🧲 Kp Index</h2>

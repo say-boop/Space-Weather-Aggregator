@@ -432,6 +432,25 @@ function updateSolarWind(solarWind, bzData) {
 }
 
 
+function updateSunImage() {
+	const img = document.getElementById("sun-image");
+	img.src = "https://soho.nascom.nasa.gov/data/realtime/eit_304/1024/latest.jpg";
+	img.onerror = function() {
+		img.src = "";
+	};
+}
+
+function changeSunWavelength(wave) {
+	document.getElementById("sun-image").src =
+    `https://soho.nascom.nasa.gov/data/realtime/${wave}/1024/latest.jpg`;
+	document.getElementById("sun-wavelength").textContent =
+    `SOHO ${wave.replace("_", " ").toUpperCase()}`;
+	
+	document.querySelectorAll(".sun-btn").forEach(btn => btn.classList.remove("active"));
+	event.target.classList.add("active");
+}
+
+
 function showNotification(message, type = "info") {
 	const container = document.createElement("div");
 	container.style.cssText = `
@@ -564,6 +583,7 @@ socket.onopen = function () {
 	initKpChart();
 	initKpHistoryChart();
 	initRadiationChart();
+	updateSunImage();
 	loadKpHistory();
 	loadTranslations(currentLang);
 	
